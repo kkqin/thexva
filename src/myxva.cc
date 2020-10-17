@@ -1,7 +1,15 @@
 #include "myxva.h"
 #include <sys/stat.h>
+#include "pugixml.hpp"
 
 namespace XVA {
+
+struct xva_info {
+
+};
+
+using XvaInfo = struct xva_info;
+using XvaInfoPtr = std::shared_ptr<XvaInfo>;
 
 static inline bool exists_file (const std::string& name) {
 	struct stat buffer;   
@@ -23,8 +31,13 @@ static inline bool is_tar_file (const std::string& name) {
 	return false;
 }
 
-static void parse_xml(const char* buffer, size_t size) {
+static XvaInfoPtr parse_xml(const char* buffer, size_t size) {
+	pugi::xml_document doc;
+	auto result = doc.load_buffer(buffer, size);
+	if(!result)
+		return nullptr;
 
+	return nullptr;
 }
 
 bool XvaSt::open_xva(const std::string& filename) {

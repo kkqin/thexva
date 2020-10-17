@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 
 	auto offset = 512;
 	char* buffer = NULL;
-	da.read_xva(offset, &buffer);
+	da.read_xva(offset, 0, &buffer);
 	
 	return 0;	
 }
