@@ -6,6 +6,9 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_BUILD_TYPE Debug)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+include(cmake/mytar.cmake)
+include(cmake/pugixml.cmake)
+
 SET(SPATH "src")
 
 CONFIGURE_FILE(
