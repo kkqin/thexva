@@ -7,7 +7,7 @@ namespace XVA {
 	class XvaSt {
 	public:	
 		bool open_xva(const std::string& filename);
-		void read_xva(long long offset, char** buffer);
+		void read_xva(long long offset, size_t size, char** buffer);
 	private:
 		XTarPtr tarfile;
 	};

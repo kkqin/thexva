@@ -23,6 +23,10 @@ static inline bool is_tar_file (const std::string& name) {
 	return false;
 }
 
+static void parse_xml(const char* buffer, size_t size) {
+
+}
+
 bool XvaSt::open_xva(const std::string& filename) {
 	if(!exists_file(filename))
 		return false;
@@ -35,7 +39,7 @@ bool XvaSt::open_xva(const std::string& filename) {
 	return true;
 }
 
-void XvaSt::read_xva(long long offset, char** buffer) {
+void XvaSt::read_xva(long long offset, size_t size, char** buffer) {
 	if(tarfile == nullptr)
 		return;
 
