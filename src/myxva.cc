@@ -9,13 +9,13 @@ struct xva_info {
 	xva_info() {}
 	std::string _disks_name;
 	std::string _disks_size;
-	std::map<long long, mytar::BlockPtr> _data;
+	std::vector<mytar::BlockPtr> _data;
 };
 
 using XvaInfo = struct xva_info;
 using XvaInfoPtr = std::shared_ptr<XvaInfo>;
 
-static std::vector<XvaInfoPtr> xva_boxes;
+static std::map<std::string, XvaInfoPtr> xva_boxes;
 
 static inline bool exists_file (const std::string& name) {
 	struct stat buffer;   
@@ -47,6 +47,26 @@ void find_node(pugi::xml_node& node, const std::string key) {
         }
 }
 
+bool dispatch(std::map<long long, mytar::BlockPtr> data) {
+
+	for(auto it : data) {
+		auto bl = it.second;
+		auto pos = bl->filename.find("/");
+		auto disk_name = bl->filename.substr(0, pos); 	
+
+		auto iter = xva_boxes.find(disk_name);
+		if(iter == xva_boxes.end()) {
+			std::cout << "occur error. disks doesn't find." << std::endl;
+			return false;
+		}
+			
+		auto xva_ = iter->second;	
+		xva_ -> _data.push_back(bl);
+	}
+
+	return true;
+}
+
 static void parse_xml(const char* buffer, size_t size) {
 	pugi::xml_document doc;
 	auto result = doc.load_buffer(buffer, size);
@@ -67,7 +87,7 @@ static void parse_xml(const char* buffer, size_t size) {
 			find_node(node, "virtual_size");
 			xvaPtr->_disks_size = node.child_value("value");
 
-			xva_boxes.push_back(xvaPtr);
+			xva_boxes.insert({xvaPtr->_disks_name , xvaPtr});
 		}
 	}
 
@@ -92,7 +112,6 @@ bool XvaSt::open_xva(const std::string& filename) {
 	auto iter = out.find(0);
 	if(iter == out.end())
 		return false;
-	
 
 	auto bl = iter->second;
 	char* buffer = new char[bl->filesize];
@@ -101,8 +120,7 @@ bool XvaSt::open_xva(const std::string& filename) {
 	file->read(buffer, bl->filesize);
 	parse_xml(buffer,  bl->filesize);
 
-	std::cout << xva_boxes.size() << std::endl;
-
+	
 	return true;
 }
 
