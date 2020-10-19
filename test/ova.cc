@@ -1,25 +1,23 @@
 #include "test.h"
 #include "pugixml.hpp"
 
-void first_member(const pugi::xpath_node_set& res, const std::string key) {
-	auto node = res[0].node().child("value").child("struct").child("member");
+void find_node(pugi::xml_node& node, const std::string key) {
 	while(!node.empty()) {
 		if(std::string{node.child_value("name")} == key) {
-			std::cout << "find." << std::endl;
+			//std::cout << "find." << std::endl;
 			break;
 		}
 		
-		//std::cout << node.child_value("name") << ":";
-		//std::cout << node.child_value("value") << std::endl;
-		//std::cout << "go next node." << std::endl;
 		node = node.next_sibling(); 
 	}
-
-	std::cout << node.child_value("name")<< ":" << node.child_value("value") << std::endl;
 }
 
-void second_member(const pugi::xpath_node_set& res, const std::string key) {
-	//auto node = res[0].node().child("value").child("struct").child("member");
+void first_member(const pugi::xpath_node_set& res, const std::string key) {
+	auto node = res[0].node().child("value").child("struct").child("member");
+
+	find_node(node, key); 
+	
+	std::cout << node.child_value("name")<< ":" << node.child_value("value") << std::endl;
 }
 
 void the_ova(std::string ovafile) {
@@ -61,7 +59,15 @@ void the_ova(std::string ovafile) {
 
 	for(auto it : node_range) {
 		auto node = it.child("struct").child("member");
-		std::cout << node.child_value("name") << ":";
-		std::cout << node.child_value("value") << std::endl;
+//		std::cout << node.child_value("name") << ":";
+		//std::cout << node.child_value("value") << std::endl;
+		
+		if( std::string{node.child_value("value")} == "VDI" ) {
+			find_node(node, "snapshot");
+			//std::cout << "class name : " << node.child_value("name") << std::endl;
+			node = node.child("value").child("struct").child("member");
+			find_node(node, "virtual_size");
+			std::cout << node.child_value("value") << std::endl;
+		}
 	}
 }
