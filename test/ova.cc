@@ -18,6 +18,10 @@ void first_member(const pugi::xpath_node_set& res, const std::string key) {
 	std::cout << node.child_value("name")<< ":" << node.child_value("value") << std::endl;
 }
 
+void second_member(const pugi::xpath_node_set& res, const std::string key) {
+	//auto node = res[0].node().child("value").child("struct").child("member");
+}
+
 void the_ova(std::string ovafile) {
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file("ova.xml");
@@ -50,5 +54,14 @@ void the_ova(std::string ovafile) {
 	for(auto it : res)
 		std::cout << it.attribute() << std::endl;
 */
-	first_member(res, "export_vsn");
+	first_member(res,"export_vsn");
+	std::cout << "++\\\\\\\\\\\\\\\\\\++" << std::endl;
+
+	auto node_range = res[1].node().child("value").child("array").child("data").children("value");
+
+	for(auto it : node_range) {
+		auto node = it.child("struct").child("member");
+		std::cout << node.child_value("name") << ":";
+		std::cout << node.child_value("value") << std::endl;
+	}
 }
