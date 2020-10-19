@@ -1,10 +1,10 @@
-AUX_SOURCE_DIRECTORY(. DIR_SRCS)
+aux_source_directory(. DIR_SRCS)
 
-ADD_EXECUTABLE(xvaparse ${DIR_SRCS})
+add_executable(xvaparse ${DIR_SRCS})
 
-TARGET_INCLUDE_DIRECTORIES(xvaparse PUBLIC ../dep/newtar ../dep/pugixml)
+target_include_directories(xvaparse PUBLIC ../dep/newtar ../dep/pugixml)
 
-TARGET_LINK_LIBRARIES(xvaparse PUBLIC 
+target_link_libraries(xvaparse PUBLIC 
 	#${PROJECT_SOURCE_DIR}/libs/libmytar.a
 	pugixml
 	mytar
