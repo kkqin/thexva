@@ -170,7 +170,8 @@ void XvaSt::read_xva(long long offset, size_t size, char** buffer) {
 	for(; index > 0; index--)
 		start_offset -= v_data[index]->filesize; 
 
-	*buffer = new char[size];
+	char *tmp = (char*)malloc(sizeof(char) * size);
+	*buffer = tmp;
 	auto file = tarfile->back_file();
 	while(size) {
 		auto bl = v_data[index++];
@@ -180,8 +181,8 @@ void XvaSt::read_xva(long long offset, size_t size, char** buffer) {
 		start_offset += bl->offset;
 		file->seekg(start_offset); //start
 
-		file->read(*buffer, block_can_read);
-		*buffer += block_can_read;
+		file->read(tmp, block_can_read);
+		tmp += block_can_read;
 		size -= block_can_read;
 		if(size > 0)
 			start_offset = 0;
