@@ -14,5 +14,8 @@ int main(int argc, char* argv[]) {
 	if(!da.open_xva(argv[1]))
 		std::cout << "failed." << std::endl;
 
+	char *buffer = NULL;
+	da.read_xva(512, 1048576, &buffer);
+
 	return 0;	
 }

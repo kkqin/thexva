@@ -72,7 +72,6 @@ void dispatch(std::map<long long, mytar::BlockPtr> data) {
 
 			if(digital_f + 1 != digital_n) {
 				auto diff = digital_n - digital_f - 1;
-			//for( ;digital_f < digital_n; ) {
 				auto null_bl = std::shared_ptr<mytar::Block>(new 
 					mytar::Block(-1, 
 						bl->is_longname, 
@@ -175,14 +174,16 @@ void XvaSt::read_xva(long long offset, size_t size, char** buffer) {
 	auto file = tarfile->back_file();
 	while(size) {
 		auto bl = v_data[index++];
+		auto block_can_read = bl->filesize - start_offset; 
+		if(block_can_read > size)
+			block_can_read = size;
 		start_offset += bl->offset;
 		file->seekg(start_offset); //start
 
-		auto block_can_read = bl->filesize - start_offset; 
 		file->read(*buffer, block_can_read);
 		*buffer += block_can_read;
 		size -= block_can_read;
-		if(size)
+		if(size > 0)
 			start_offset = 0;
 		else
 			break;
