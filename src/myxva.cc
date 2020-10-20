@@ -49,11 +49,12 @@ void find_node(pugi::xml_node& node, const std::string key) {
 
 void dispatch(std::map<long long, mytar::BlockPtr> data) {
 
+	mytar::BlockPtr prev_bl;
 	for(auto it : data) {
 		auto bl = it.second;
 		auto pos = bl->filename.find("/");
 		auto disk_name = bl->filename.substr(0, pos); 	
-		pos = bl->filename.find("checksum");
+		auto check_pos = bl->filename.find("checksum");
 
 		auto iter = xva_boxes.find(disk_name);
 		if(iter == xva_boxes.end()) {
@@ -61,12 +62,35 @@ void dispatch(std::map<long long, mytar::BlockPtr> data) {
 			continue;
 		}
 
-		if(pos != std::string::npos)
+		if(check_pos != std::string::npos)
 			continue;
 
 		auto xva_ = iter->second;	
+		if(prev_bl != nullptr) {
+			auto digital_f = std::stoll(prev_bl->filename.substr(pos + 1));
+			auto digital_n = std::stoll(bl->filename.substr(pos + 1));
+
+			if(digital_f + 1 != digital_n) {
+				auto diff = digital_n - digital_f - 1;
+			//for( ;digital_f < digital_n; ) {
+				auto null_bl = std::shared_ptr<mytar::Block>(new 
+					mytar::Block(-1, 
+						bl->is_longname, 
+						bl->filesize * diff, 
+						"nullblock"
+						)
+				);
+				xva_->_data.emplace_back(null_bl);
+			}
+		}
+
 		xva_ -> _data.push_back(bl);
+		prev_bl = bl;
 	}
+}
+
+void located_block() {
+
 }
 
 static void parse_xml(const char* buffer, size_t size) {
@@ -130,7 +154,6 @@ bool XvaSt::open_xva(const std::string& filename) {
 void XvaSt::read_xva(long long offset, size_t size, char** buffer) {
 	if(tarfile == nullptr)
 		return;
-
 
 	/*auto i = 10;
 	for(auto it : out) { 
