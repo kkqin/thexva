@@ -89,8 +89,18 @@ void dispatch(std::map<long long, mytar::BlockPtr> data) {
 	}
 }
 
-void located_block() {
+std::tuple<long long, long long, std::vector<mytar::BlockPtr>> located_block(std::string disk_name, long long manual_offset) {
+	auto disk = xva_boxes.find(disk_name);
 
+	long long index = 0, offset_sum = 0;
+	auto v_data = disk->second->_data;
+	for(; index < v_data.size(); index++) {
+		offset_sum += v_data[index]->filesize;
+		if(offset_sum > manual_offset)
+			return {index, offset_sum, v_data};
+	}
+
+	return {-1, -1, v_data};
 }
 
 static void parse_xml(const char* buffer, size_t size) {
@@ -155,28 +165,28 @@ void XvaSt::read_xva(long long offset, size_t size, char** buffer) {
 	if(tarfile == nullptr)
 		return;
 
-	/*auto i = 10;
-	for(auto it : out) { 
-		if(i == 0) break ;
-		std::cout << it.first << " "<<  it.second->filename << " " << it.second->offset << std::endl;
-		i--;
-	}
+	auto [index, disk_offset_sum, v_data] = located_block("Ref:7", offset); //c++ 17
 
-	auto iter = out.find(offset - 512);
-	if(iter == out.end()) {
-		std::cout << "doesn't found." << std::endl;
-		return;
-	}
+	auto start_offset = offset;
+	for(; index > 0; index--)
+		start_offset -= v_data[index]->filesize; 
 
-	auto bl = iter->second;
-	auto filesize = bl->filesize;
-	std:kcout << "catch file: " << bl->filename << std::endl;
-	std::cout << "file size: " << filesize << std::endl;
-
-	*buffer = new char[filesize];
+	*buffer = new char[size];
 	auto file = tarfile->back_file();
-	file->seekg(offset);
-	file->read(*buffer, filesize);*/
+	while(size) {
+		auto bl = v_data[index++];
+		start_offset += bl->offset;
+		file->seekg(start_offset); //start
+
+		auto block_can_read = bl->filesize - start_offset; 
+		file->read(*buffer, block_can_read);
+		*buffer += block_can_read;
+		size -= block_can_read;
+		if(size)
+			start_offset = 0;
+		else
+			break;
+	}
 }
 
 }
