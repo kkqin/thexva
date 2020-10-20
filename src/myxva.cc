@@ -47,24 +47,26 @@ void find_node(pugi::xml_node& node, const std::string key) {
         }
 }
 
-bool dispatch(std::map<long long, mytar::BlockPtr> data) {
+void dispatch(std::map<long long, mytar::BlockPtr> data) {
 
 	for(auto it : data) {
 		auto bl = it.second;
 		auto pos = bl->filename.find("/");
 		auto disk_name = bl->filename.substr(0, pos); 	
+		pos = bl->filename.find("checksum");
 
 		auto iter = xva_boxes.find(disk_name);
 		if(iter == xva_boxes.end()) {
 			std::cout << "occur error. disks doesn't find." << std::endl;
-			return false;
+			continue;
 		}
-			
+
+		if(pos != std::string::npos)
+			continue;
+
 		auto xva_ = iter->second;	
 		xva_ -> _data.push_back(bl);
 	}
-
-	return true;
 }
 
 static void parse_xml(const char* buffer, size_t size) {
@@ -120,6 +122,7 @@ bool XvaSt::open_xva(const std::string& filename) {
 	file->read(buffer, bl->filesize);
 	parse_xml(buffer,  bl->filesize);
 
+	dispatch(out);
 	
 	return true;
 }
