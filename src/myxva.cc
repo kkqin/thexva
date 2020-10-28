@@ -70,7 +70,7 @@ void dispatch(std::map<long long, mytar::BlockPtr> data) {
 			auto digital_f = std::stoll(prev_bl->filename.substr(pos + 1));
 			auto digital_n = std::stoll(bl->filename.substr(pos + 1));
 
-			if(digital_f + 1 != digital_n) {
+			if(digital_f + 1 != digital_n && digital_n) {
 				auto diff = digital_n - digital_f - 1;
 				auto null_bl = std::shared_ptr<mytar::Block>(new 
 					mytar::Block(-1, 
