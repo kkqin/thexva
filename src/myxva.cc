@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 #include "pugixml.hpp"
 #include <vector>
+#include <cstring>
 
 namespace XVA {
 
@@ -178,10 +179,17 @@ void XvaSt::read_xva(long long offset, size_t size, char** buffer) {
 		auto block_can_read = bl->filesize - start_offset; 
 		if(block_can_read > size)
 			block_can_read = size;
-		start_offset += bl->offset;
-		file->seekg(start_offset); //start
 
-		file->read(tmp, block_can_read);
+		if(bl->offset = -1) { // read nullblock
+			memset(tmp, 0x00, block_can_read);
+		}
+		else {
+			start_offset += bl->offset;
+			file->seekg(start_offset); //start
+
+			file->read(tmp, block_can_read);
+		}
+
 		tmp += block_can_read;
 		size -= block_can_read;
 		if(size > 0)
