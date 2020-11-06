@@ -183,6 +183,7 @@ void XvaSt::read_xva(long long offset, size_t size, char* buffer) {
 		else {
 			file->seekg(in_block_read_offset);
 			file->read(buffer, block_can_read);
+			file->seekg(in_block_read_offset + block_can_read);
 		}
 
 		buffer += block_can_read;
