@@ -161,41 +161,33 @@ bool XvaSt::open_xva(const std::string& filename) {
 	return true;
 }
 
-void XvaSt::read_xva(long long offset, size_t size, char** buffer) {
+void XvaSt::read_xva(long long offset, size_t size, char* buffer) {
 	if(tarfile == nullptr)
 		return;
 
 	auto [index, disk_offset_sum, v_data] = located_block("Ref:7", offset); //c++ 17
 
-	auto start_offset = offset;
-	for(; index > 0; index--)
-		start_offset -= v_data[index]->filesize; 
+	auto start_offset = offset;  
 
-	char *tmp = (char*)malloc(sizeof(char) * size);
-	*buffer = tmp;
 	auto file = tarfile->back_file();
-	while(size) {
+	auto read_total = size;
+	while(read_total) {
 		auto bl = v_data[index++];
-		auto block_can_read = bl->filesize - start_offset; 
-		if(block_can_read > size)
-			block_can_read = size;
-
-		if(bl->offset = -1) { // read nullblock
-			memset(tmp, 0x00, block_can_read);
-		}
+		auto mod_result = start_offset % bl->filesize;
+		auto in_block_read_offset = bl->offset + mod_result;
+		auto block_can_read = bl->filesize - mod_result;
+		if(read_total < block_can_read)
+			block_can_read = read_total;
+		if(bl->offset < 0)
+			memset(buffer, 0x00, block_can_read);
 		else {
-			start_offset += bl->offset;
-			file->seekg(start_offset); //start
-
-			file->read(tmp, block_can_read);
+			file->seekg(in_block_read_offset);
+			file->read(buffer, block_can_read);
 		}
 
-		tmp += block_can_read;
-		size -= block_can_read;
-		if(size > 0)
-			start_offset = 0;
-		else
-			break;
+		buffer += block_can_read;
+		read_total -= block_can_read;
+		start_offset = 0;
 	}
 }
 
