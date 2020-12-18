@@ -23,13 +23,34 @@ static inline bool exists_file (const std::string& name) {
 	return (stat (name.c_str(), &buffer) == 0); 
 }
 
+static const char magic_word[24] = {
+         0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x00,
+         0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x00,
+         0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x00
+};
+
+bool is_tar_head(char* block) {
+	if(!strncmp(&block[257], "ustar", 5)) {
+		char* owner = &block[257 + 8];
+		char* group = owner + 32;
+		if(!strcmp(owner, group)) 
+			return true;
+	}
+
+	for(auto i = 0; i < sizeof(magic_word); i++) {
+		if(block[100 + i] != magic_word[i])
+			return false;
+	}
+	return true;
+}
+
 static inline bool is_tar_file (const std::string& name) {
 	std::ifstream f;
 	f.open(name, std::ifstream::in | std::ifstream::binary);
 
 	char* buffer = new char[512]; 
 	f.read(buffer, 512);
-	if(mytar::is_tar_head(buffer)) {
+	if(is_tar_head(buffer)) {
 		delete [] buffer;
 		return true;
 	}
@@ -59,7 +80,7 @@ void dispatch(std::map<long long, mytar::BlockPtr> data) {
 
 		auto iter = xva_boxes.find(disk_name);
 		if(iter == xva_boxes.end()) {
-			std::cout << "occur error. disks doesn't find." << std::endl;
+			std::cout << "warning: occur error. disks doesn't find." << std::endl;
 			continue;
 		}
 
@@ -137,7 +158,7 @@ bool XvaSt::open_xva(const std::string& filename) {
 	if(!is_tar_file(filename))
 		return false;
 
-	tarfile = std::shared_ptr<mytar::XTar>(new mytar::XTar{filename.c_str()});
+	tarfile = std::shared_ptr<mytar::NTar>(new mytar::NTar{filename.c_str()});
 
 	std::map<long long, mytar::BlockPtr> out;
 	tarfile->parsing([&](std::map<long long, mytar::BlockPtr> m){
@@ -145,7 +166,7 @@ bool XvaSt::open_xva(const std::string& filename) {
 	}, 
 	true);
 
-	auto iter = out.find(0);
+	auto iter = out.find(512);
 	if(iter == out.end())
 		return false;
 
@@ -190,6 +211,11 @@ void XvaSt::read_xva(long long offset, size_t size, char* buffer) {
 		read_total -= block_can_read;
 		start_offset = 0;
 	}
+}
+
+void XvaSt::show_all_disk() {
+	for(auto it : xva_boxes)
+		std::cout << it.first << std::endl;
 }
 
 }
